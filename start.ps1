@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-. lib.ps1
+Import-Module -Name '/lib'
 
 if ( Test-StarboundInstalled ) {
   Start-StarboundServer
@@ -9,3 +9,4 @@ if ( Test-StarboundInstalled ) {
 Wait-ForStarboundUpdate
 
 exit
+

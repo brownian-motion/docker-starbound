@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-. lib.ps1
+Import-Module -Name '/lib'
 
 Lock-UpdateLock
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env pwsh
 
-
 function Install-StarboundServer ([Parameter(Mandatory=$true)][string]$SteamUsername) {
-    If ( -Not Test-UpdateLock ) {
+    If ( -Not (Test-UpdateLock) ) {
         throw "cannot update server without /.update lock"
     }
 
@@ -18,8 +17,8 @@ function Install-StarboundServer ([Parameter(Mandatory=$true)][string]$SteamUser
         +quit
 }
 
-function Download-StarboundMods ([string[]]$ModIds) {
-    If ( -Not Test-UpdateLock ) {
+function Get-StarboundMods ([string[]]$ModIds) {
+    If ( -Not (Test-UpdateLock) ) {
         throw "cannot update mods without /.update lock"
     }
 
@@ -29,25 +28,29 @@ function Download-StarboundMods ([string[]]$ModIds) {
         $cmd += '211820'
         $cmd += $modId
     }
-    $cmd += 'quit'
+    $cmd += '+quit'
 
     /steamcmd/steamcmd.sh @cmd
 }
 
 function Install-StarboundMods ([string[]]$ModIds) {
-    If ( -Not Test-UpdateLock ) {
+    If ( -Not (Test-UpdateLock) ) {
         throw "cannot update mods without /.update lock"
     }
 
-    Download-StarboundMods -ModIds:$ModIds
+    Get-StarboundMods -ModIds:$ModIds
 
+    Install-DownloadedStarboundMods -ModIds:$ModIds
+}
+
+function Install-DownloadedStarboundMods([string[]]$ModIds){
     foreach ($modId in $ModIds) {
         Remove-Item -Force -Recurse "/starbound/mods/$modId"
         Copy-Item -Container -Recurse "/starbound/steamapps/workshop/content/211820/$modId" "/starbound/mods/$modId"
     }
 }
 
-function Test-UpdateLock () {
+function Test-UpdateLock() {
     return Test-Path -Path /.update -PathType Leaf
 }
 
@@ -81,7 +84,7 @@ function Test-StarboundInstalled() {
 }
 
 function Start-StarboundServer() {
-  if ( -Not Test-StarboundInstalled ) {
+  if ( -Not (Test-StarboundInstalled) ) {
     throw "Starbound not installed"
   }
 
@@ -89,7 +92,7 @@ function Start-StarboundServer() {
     throw "locked for update"
   }
 
-  $extraFlags = Get-StarboundConfigOverrideFlags() 
+  $extraFlags = Get-StarboundConfigOverrideFlags 
 
   Set-Location '/starbound/linux'
   ./starbound_server @extraFlags
@@ -124,3 +127,4 @@ function Get-StarboundConfigOverrideFlags() {
         $out += "${override.Name}:${override.Value}"
     }
 }
+

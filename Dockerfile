@@ -1,43 +1,49 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 as base
 
 MAINTAINER BrownianMotion
 
-ENV LC_ALL en_US.UTF-8 
-RUN locale-gen en_US.UTF-8  
-ENV LANGUAGE en_US:en  
-ENV LANG en_US.UTF-8  
-
-ENV DEBIAN_FRONTEND noninteractive
 
 ### Install dependencies
 
 RUN apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get autoremove -y
 
+# set environment
+
+ENV LC_ALL en_US.UTF-8 
+RUN apt-get install -y locales && locale-gen en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LANG en_US.UTF-8  
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# get dependencies for scripts and build
+
 RUN apt-get install -y \
     ca-certificates \
     software-properties-common \
-    python-software-properties \
-    lib32gcc1 \
+    # python-software-properties \
+    libgcc1 \
     libstdc++6 \
     curl \
     wget \
-    bsdtar \
+    dpkg \
+    # bsdtar \
     build-essential
 
 ### Install Powershell
 
 # Update the list of packages
-RUN sudo apt-get update
+RUN apt-get update
 # Install pre-requisite packages.
-RUN sudo apt-get install -y wget apt-transport-https software-properties-common
+RUN apt-get install -y wget apt-transport-https software-properties-common
 # Download the Microsoft repository GPG keys
 RUN wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
 # Register the Microsoft repository GPG keys
-RUN sudo dpkg -i packages-microsoft-prod.deb
+RUN dpkg -i packages-microsoft-prod.deb
 # Update the list of packages after we added packages.microsoft.com
-RUN sudo apt-get update
+RUN apt-get update
 # Install PowerShell
-RUN sudo apt-get install -y powershell
+RUN apt-get install -y powershell
 
 
 ### Set up the pieces of the server image
@@ -55,19 +61,27 @@ RUN cd /steamcmd \
 
 
 ADD start.ps1 /start.ps1
-
 ADD update.ps1 /update.ps1
+ADD lib.psm1 /lib/lib.psm1
 
 # Add initial require update flag
 ADD .update /.update
 
 WORKDIR /
 
-EXPOSE 28015
-EXPOSE 28016
-
 ENV STEAM_LOGIN FALSE
 
 ENV DEBIAN_FRONTEND newt
+
+FROM base as test
+ADD test.ps1 /test.ps1
+COPY tests/ /tests/
+RUN ["/usr/bin/env", "pwsh", "-c", "Install-Module -Name Pester -Force"]
+RUN ["./test.ps1"]
+
+FROM base as main
+
+EXPOSE 28015
+EXPOSE 28016
 
 ENTRYPOINT ["./start.ps1"]
