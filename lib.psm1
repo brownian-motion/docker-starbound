@@ -89,17 +89,22 @@ function Test-StarboundInstalled() {
 
 function Start-StarboundServer() {
   if ( -Not (Test-StarboundInstalled) ) {
-    throw "Starbound not installed"
+    throw "Starbound not installed, please run /update.ps1 for initial install"
   }
 
   if ( Test-UpdateLock ){
-    throw "locked for update"
+    throw "Locked for update, please run /update.ps1 for initial install or update"
   }
 
   $extraFlags = Get-StarboundConfigOverrideFlags 
 
+  Invoke-StarboundServer -Args $extraFlags
+}
+
+function Invoke-StarboundServer([string[]]$Args) {
   Set-Location '/starbound/linux'
-  ./starbound_server @extraFlags
+  ./starbound_server @Args
+  return $LASTEXITCODE
 }
 
 function Wait-ForStarboundUpdate() {

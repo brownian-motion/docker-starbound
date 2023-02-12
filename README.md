@@ -58,3 +58,21 @@ docker exec -e STEAM_USERNAME=foo -e MOD_IDS='1234567890,1234567890' -t -i starb
 To run with the update, just start the docker image again as above.
 
 
+## Building
+If you prefer to build the image yourself, just clone and build the `main` target:
+
+```sh
+# get the repo
+git clone https://github.com/BrownianMotion/docker-starbound && cd docker-starbound
+
+# build the image
+docker build -t starbound --target main .
+
+# run the image
+docker run --name starbound -p 21025:21025 -v /root/starbound:/starbound starbound
+```
+
+### Testing
+```sh
+docker build --target test .
+```
