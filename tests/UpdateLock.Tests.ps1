@@ -1,4 +1,6 @@
-Import-Module -Name '/lib'
+BeforeAll {
+    Import-Module -Name '/lib'
+}
 
 Describe "Test-UpdateLock" {
     It "is locked when /.update is present" {
@@ -27,7 +29,6 @@ Describe "Lock-UpdateLock" {
         Test-UpdateLock | Should -Be $true
     }
 }
-
 
 Describe "Unlock-UpdateLock" {
     It "stays unlocked when not locked" {
