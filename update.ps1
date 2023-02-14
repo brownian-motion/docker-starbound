@@ -1,10 +1,19 @@
 #!/usr/bin/env pwsh
 
+param(
+    [Parameter(Mandatory=$false, Position=0)][string]$SteamUsername,
+    [Parameter(Mandatory=$false, Position=1)][string]$SteamPassword
+)
+
 Import-Module -Name '/lib'
 
 Lock-UpdateLock
 
-Install-StarboundServer -SteamUsername (Get-SteamUsername)
+if ($null -eq $SteamUsername -Or "" -eq $SteamUsername) {
+    $SteamUsername = Get-SteamUsername
+}
+
+Install-StarboundServer -SteamUsername $SteamUsername
 Install-StarboundMods -ModIds (Get-ModIds)
 
 Unlock-UpdateLock
