@@ -11,9 +11,11 @@ function Install-StarboundServer ([Parameter(Mandatory=$true)][string]$SteamUser
 
     # Hack to remove cached auth details that stops the password prompt from appearing
     if ( Test-Path -Path /root/Steam/config/config.vdf ) {
+        Write-Verbose "Removing 'ConnectCache' config that blocks password prompt"
         sed -i '/"ConnectCache"/,/}/d' /root/Steam/config/config.vdf
     }
 
+    Write-Verbose "Installing & validating Starbound install"
     Invoke-SteamCmd `
         +force_install_dir /starbound/ `
         +login $SteamUsername `
@@ -34,6 +36,7 @@ function Get-StarboundMods ([string]$SteamUsername, [string[]]$ModIds) {
     }
     $cmd += '+quit'
 
+    Write-Verbose "Installing mods..."
     Invoke-SteamCmd $cmd
 }
 
@@ -49,7 +52,10 @@ function Install-StarboundMods ([string[]]$ModIds) {
 
 function Install-DownloadedStarboundMods([string[]]$ModIds){
     foreach ($modId in $ModIds) {
+        Write-Verbose "Removing any existing install for mod $modId"
         Remove-Item -Force -Recurse "/starbound/mods/$modId" -ErrorAction SilentlyContinue
+
+        Write-Verbose "Installing downloaded mod $modId to /starbound"
         Copy-Item -Container -Recurse "/starbound/steamapps/workshop/content/211820/$modId" "/starbound/mods/$modId"
     }
 }
@@ -59,19 +65,25 @@ function Test-UpdateLock() {
 }
 
 function Lock-UpdateLock() {
+    Write-Verbose "Locking for updates"
     Stop-StarboundService
     touch /.update
 }
 
 function Unlock-UpdateLock() {
-    rm /.update
+    Remove-Item -Path /.update -ErrorAction SilentlyContinue
+    Write-Verbose "Unlocking after updates"
 }
 
 function Stop-StarboundService() {
+    Write-Verbose "Stopping starbound server..."
     $PID=(pidof "/starbound/linux/starbound_server")
 
     if ( $null -ne $PID -And "" -ne $PID ) {
+        Write-Verbose "  Killing starbound server"
         kill $PID
+    } else {
+        Write-Verbose "  No starbound server is running"
     }
 }
 
@@ -102,14 +114,18 @@ function Start-StarboundServer() {
 }
 
 function Invoke-StarboundServer([string[]]$Args) {
+  Write-Verbose "Running starbound server with args $Args"
   Set-Location '/starbound/linux'
   ./starbound_server @Args
   return $LASTEXITCODE
 }
 
 function Wait-ForStarboundUpdate() {
+  Write-Verbose "Initial check for /.update lock..."
   while (Test-Path -Path '/.update' ) {
+    Write-Verbose "  Locked for update. Sleeping..."
     Start-Sleep -Seconds 10
+    Write-Verbose "  Checking for /.update lock..."
   }
 }
 

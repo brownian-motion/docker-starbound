@@ -1,5 +1,6 @@
 #!/usr/bin/env pwsh
 
+[CmdletBinding()]
 param(
     [Parameter(Mandatory=$false, Position=0)][string]$SteamUsername,
     [Parameter(Mandatory=$false, Position=1)][string]$SteamPassword

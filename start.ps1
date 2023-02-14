@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+[CmdletBinding()]param()
+
 Import-Module -Name '/lib'
 
 if ( Test-StarboundInstalled ) {
