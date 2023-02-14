@@ -1,6 +1,7 @@
 #!/usr/bin/env pwsh
 
 function Invoke-SteamCmd([Parameter(Mandatory=$true, ValueFromRemainingArguments=$true)][string[]] $Command) {
+    Write-Verbose "Running Steam command with args $Command"
     /usr/games/steamcmd @Cmd
 }
 
