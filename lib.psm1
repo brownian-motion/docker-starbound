@@ -64,6 +64,9 @@ function Test-UpdateLock() {
 }
 
 function Lock-UpdateLock() {
+    If ((Test-UpdateLock)) {
+        return
+    }
     Write-Verbose "Locking for updates"
     Stop-StarboundService
     touch /.update
@@ -73,6 +76,9 @@ function Lock-UpdateLock() {
 }
 
 function Unlock-UpdateLock() {
+    If (-Not (Test-UpdateLock)){
+        return
+    }
     Remove-Item -Path /.update
     Write-Verbose "Unlocking after updates"
     if (Test-UpdateLock) {
