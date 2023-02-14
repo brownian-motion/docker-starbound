@@ -18,10 +18,10 @@ function Install-StarboundServer ([Parameter(Mandatory=$true)][string]$SteamUser
 
     Write-Verbose "Installing & validating Starbound install"
     Invoke-SteamCmd `
-        +force_install_dir /starbound/ `
-        +login $SteamUsername `
-        +app_update 211820 validate `
-        +quit
+        "+force_install_dir /starbound/" `
+        "+login $SteamUsername" `
+        "+app_update 211820 validate" `
+        "+quit"
 }
 
 function Get-StarboundMods ([string]$SteamUsername, [string[]]$ModIds) {
@@ -29,11 +29,9 @@ function Get-StarboundMods ([string]$SteamUsername, [string[]]$ModIds) {
         throw "cannot update mods without /.update lock"
     }
 
-    $cmd = @('+force_install_dir', '/starbound/', '+login', $SteamUsername)
+    $cmd = @('+force_install_dir /starbound/', "+login $SteamUsername")
     foreach ($modId in $ModIds) {
-        $cmd += "+workshop_download_item"
-        $cmd += '211820'
-        $cmd += $modId
+        $cmd += "+workshop_download_item 211820 $modId"
     }
     $cmd += '+quit'
 
@@ -69,11 +67,17 @@ function Lock-UpdateLock() {
     Write-Verbose "Locking for updates"
     Stop-StarboundService
     touch /.update
+    if (-Not (Test-UpdateLock)) {
+        throw "Could not lock before update"
+    }
 }
 
 function Unlock-UpdateLock() {
-    Remove-Item -Path /.update -ErrorAction SilentlyContinue
+    Remove-Item -Path /.update
     Write-Verbose "Unlocking after updates"
+    if (Test-UpdateLock) {
+        throw "Could not unlock after update"
+    }
 }
 
 function Stop-StarboundService() {
