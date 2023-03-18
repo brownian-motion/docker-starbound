@@ -69,7 +69,7 @@ function Lock-UpdateLock() {
     }
     Write-Verbose "Locking for updates"
     Stop-StarboundService
-    touch /.update
+    touch '/starbound/.updatelock'
     if (-Not (Test-UpdateLock)) {
         throw "Could not lock before update"
     }
@@ -79,7 +79,7 @@ function Unlock-UpdateLock() {
     If (-Not (Test-UpdateLock)){
         return
     }
-    Remove-Item -Path /.update
+    Remove-Item -Path '/starbound/.updatelock'
     Write-Verbose "Unlocking after updates"
     if (Test-UpdateLock) {
         throw "Could not unlock after update"

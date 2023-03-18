@@ -75,9 +75,6 @@ ADD start.ps1 /start.ps1
 ADD update.ps1 /update.ps1
 ADD lib.psm1 /lib/lib.psm1
 
-# Add initial require update flag
-ADD .update /.update
-
 WORKDIR /
 
 ENV STEAM_LOGIN FALSE
